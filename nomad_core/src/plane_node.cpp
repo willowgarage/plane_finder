@@ -58,10 +58,10 @@ int main(int argc, char **argv) {
     message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::CameraInfo> sync(image_sub, info_sub, 10);
     sync.registerCallback(boost::bind(&msg_callback, _1, _2));
 
-    ros::Publisher segmented_cloud_pub = nh.advertise<visualization_msgs::Marker>("segmented_points", 1000);
+    ros::Publisher marker_pub = nh.advertise<visualization_msgs::Marker>("segmented_points", 1000);
     cv::RgbdPlane plane_finder();
 
-    ros::Rate loop_rate(100);
+    ros::Rate loop_rate(10);
     while(ros::ok()) {
         sensor_msgs::CameraInfo::ConstPtr depth_info_tmp_msg;
         sensor_msgs::Image::ConstPtr depth_image_tmp_msg;
@@ -108,10 +108,16 @@ int main(int argc, char **argv) {
         /* publish a marker for the segmented points */
         visualization_msgs::Marker m;
         m.header.frame_id = depth_image_tmp_msg->header.frame_id;
-        m.header.stamp = depth_image_tmp_msg->header.stamp;
+        m.header.stamp = ros::Time::now(); //depth_image_tmp_msg->header.stamp;
+        m.type = visualization_msgs::Marker::POINTS;
+        m.action = visualization_msgs::Marker::ADD;
         m.ns = "segmented_points";
         m.id = 0;
         m.pose.orientation.w = 1.0;
+        m.scale.x = 0.01;
+        m.scale.y = 0.01;
+        m.color.r = 1.0;
+        m.color.a = 1.0;
         for(int row = 0; row < points3d.rows; row++) {
             for(int col = 0; col < points3d.cols; col++) {
                 cv::Vec<float, 3>* point = points3d.ptr<cv::Vec<float, 3> >(row, col);
@@ -119,6 +125,10 @@ int main(int argc, char **argv) {
                 p.x = (*point)(0);
                 p.y = (*point)(1);
                 p.z = (*point)(2);
+                if((p.x != p.x) || (p.y != p.y) || (p.z != p.z))
+                {
+                	continue;
+                }
 
                 std_msgs::ColorRGBA c;
                 int plane_i = planes_mask.at<uint8_t>(row, col);
@@ -138,9 +148,9 @@ int main(int argc, char **argv) {
             }
         }
 
-        /* publish cloud of segmented points */
-        segmented_cloud_pub.publish(m);
+        /* publish marker for segmented points */
+        marker_pub.publish(m);
 
-        ROS_INFO("Published segmented pointcloud");
+        ROS_INFO("Published %d points of segmented pointcloud", (int)m.points.size());
     }
 }
