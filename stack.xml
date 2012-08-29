@@ -1,0 +1,28 @@
+<stack>
+  <name>nomad</name>
+  <version>0.0.1</version>
+  <description brief="nomad">nomad</description>
+  <author>Jon Binney</author>
+  <maintainer email="jbinney@willowgarage.com">Jon Binney</maintainer>
+  <copyright>Willow Garage</copyright>
+  <license>BSD</license>  
+  <review status="reviewed" notes=""/>
+  <url>http://ros.org/wiki/nomad</url>
+
+  <build_depends>catkin</build_depends>
+  <build_depends>common_msgs</build_depends> <!-- sensor_msgs -->
+  <build_depends>geometry</build_depends> <!-- tf, tf_conversions -->
+  <build_depends>opencv2</build_depends>
+  <build_depends>vision_opencv</build_depends> <!-- cv_bridge -->
+  <build_depends>ecto_opencv</build_depends>
+  <build_depends>ros</build_depends>
+  <build_depends>ros_comm</build_depends> <!-- rostest, rospy, roscpp, message_filters -->
+
+  <depends>common_msgs</depends>
+  <depends>geometry</depends>
+  <depends>opencv2</depends>
+  <depends>vision_opencv</depends>
+  <depends>ecto_opencv</depends>
+  <depends>ros</depends>
+  <depends>ros_comm</depends>
+</stack>

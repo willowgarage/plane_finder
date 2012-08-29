@@ -7,23 +7,20 @@
 #include <ros/ros.h>
 #include <rosbag/bag.h>
 #include <rosbag/view.h>
-#include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/CameraInfo.h>
+#include <visualization_msgs/Marker.h>
+#include <std_msgs/ColorRGBA.h>
+#include <geometry_msgs/Pose.h>
 #include <message_filters/subscriber.h>
 #include <message_filters/time_synchronizer.h>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/core/types_c.h>
 #include <opencv2/rgbd/rgbd.hpp>
-#include <pcl/ros/conversions.h>
-#include <pcl/point_cloud.h>
-#include <pcl/point_types.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
-
-
 
 namespace enc = sensor_msgs::image_encodings;
 
@@ -61,7 +58,7 @@ int main(int argc, char **argv) {
     message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::CameraInfo> sync(image_sub, info_sub, 10);
     sync.registerCallback(boost::bind(&msg_callback, _1, _2));
 
-    ros::Publisher segmented_cloud_pub = nh.advertise<sensor_msgs::PointCloud2>("segmented_points", 1000);
+    ros::Publisher segmented_cloud_pub = nh.advertise<visualization_msgs::Marker>("segmented_points", 1000);
     cv::RgbdPlane plane_finder();
 
     ros::Rate loop_rate(100);
@@ -71,7 +68,6 @@ int main(int argc, char **argv) {
         cv_bridge::CvImagePtr depth_image_cv_ptr;
         cv::Mat depth_k;
         cv::Mat points3d;
-        sensor_msgs::PointCloud2 segmented_cloud_msg;
 
         while(ros::ok()) {
             loop_rate.sleep();
@@ -109,35 +105,41 @@ int main(int argc, char **argv) {
 
         ROS_INFO("Done processing depth image");
 
-        /* make a pointcloud of the segmented points */
-        pcl::PointCloud<pcl::PointXYZRGB> segmented_cloud;
+        /* publish a marker for the segmented points */
+        visualization_msgs::Marker m;
+        m.header.frame_id = depth_image_tmp_msg->header.frame_id;
+        m.header.stamp = depth_image_tmp_msg->header.stamp;
+        m.ns = "segmented_points";
+        m.id = 0;
+        m.pose.orientation.w = 1.0;
         for(int row = 0; row < points3d.rows; row++) {
             for(int col = 0; col < points3d.cols; col++) {
                 cv::Vec<float, 3>* point = points3d.ptr<cv::Vec<float, 3> >(row, col);
-                pcl::PointXYZRGB p;
+                geometry_msgs::Point p;
                 p.x = (*point)(0);
                 p.y = (*point)(1);
                 p.z = (*point)(2);
+
+                std_msgs::ColorRGBA c;
                 int plane_i = planes_mask.at<uint8_t>(row, col);
                 if(plane_i == 255) {
-                    p.r = 255;
-                    p.g = 255;
-                    p.b = 255;
+                  c.r = 1.0;
+                  c.g = 1.0;
+                  c.b = 1.0;
                 } else {
-                    p.r = (24305 * plane_i) % 256;
-                    p.g = (1773 * plane_i) % 256;
-                    p.b = (4539 * plane_i) % 256;
+                  c.r = ((24305 * plane_i) % 256) / 256.;
+                  c.g = ((1773 * plane_i) % 256) / 256.;
+                  c.b = ((4539 * plane_i) % 256) / 256.;
                 }
-                segmented_cloud.push_back(p);
+                c.a = 1.0;
+                m.points.push_back(p);
+                m.colors.push_back(c);
                 //ROS_INFO("%d", planes_mask.at<int>(row, col));
             }
         }
 
         /* publish cloud of segmented points */
-        pcl::toROSMsg(segmented_cloud, segmented_cloud_msg);
-        segmented_cloud_msg.header.frame_id = depth_image_tmp_msg->header.frame_id;
-        segmented_cloud_msg.header.stamp = depth_image_tmp_msg->header.stamp;
-        segmented_cloud_pub.publish(segmented_cloud_msg);
+        segmented_cloud_pub.publish(m);
 
         ROS_INFO("Published segmented pointcloud");
     }
