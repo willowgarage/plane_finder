@@ -108,14 +108,14 @@ int main(int argc, char **argv) {
         /* publish a marker for the segmented points */
         visualization_msgs::Marker m;
         m.header.frame_id = depth_image_tmp_msg->header.frame_id;
-        m.header.stamp = ros::Time::now(); //depth_image_tmp_msg->header.stamp;
+        m.header.stamp = depth_image_tmp_msg->header.stamp;
         m.type = visualization_msgs::Marker::POINTS;
         m.action = visualization_msgs::Marker::ADD;
         m.ns = "segmented_points";
         m.id = 0;
         m.pose.orientation.w = 1.0;
-        m.scale.x = 0.01;
-        m.scale.y = 0.01;
+        m.scale.x = 0.003;
+        m.scale.y = 0.003;
         m.color.r = 1.0;
         m.color.a = 1.0;
         for(int row = 0; row < points3d.rows; row++) {
