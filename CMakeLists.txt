@@ -1,1 +1,1 @@
-add_subdirectory(nomad_core)
+add_subdirectory(plane_finder)
