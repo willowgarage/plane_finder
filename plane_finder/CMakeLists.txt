@@ -3,9 +3,13 @@ project(plane_finder)
 include_directories(include)
 
 # find ros dependencies
-find_package(ROS REQUIRED roscpp sensor_msgs ecto_opencv cv_bridge message_filters tf)
+find_package(ROS REQUIRED roscpp sensor_msgs ecto_opencv cv_bridge message_filters tf tf_conversions)
 include_directories(${ROS_INCLUDE_DIRS})
 link_directories(${ROS_LIBRARY_DIRS})
+message(STATUS "ROS_LIBRARY_DIRS: "${ROS_LIBRARY_DIRS})
+
+# hack because ROS_LIBRARY_DIRS is empty for some reason! -jbinney
+link_directories(/opt/ros/groovy/lib)
 
 # find boost
 find_package(Boost COMPONENTS thread signals REQUIRED)
@@ -24,3 +28,8 @@ install(TARGETS plane_node
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   )
+
+catkin_project(${PROJECT_NAME}
+  INCLUDE_DIRS include
+  LIBRARIES
+)
