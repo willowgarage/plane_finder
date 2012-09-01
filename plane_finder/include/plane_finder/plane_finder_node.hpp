@@ -197,12 +197,27 @@ public:
 		/* don't store previous planes */
 		planes_.clear();
 
+		cv::Mat depth_image_cleared = depth_image;
+
+		/* remove NaNs */
+		int num_nans_removed = 0;
+		for(int row = 0; row < depth_image_cleared.rows; row++) {
+			for(int col = 0; col < depth_image_cleared.cols; col++) {
+				float depth = depth_image_cleared.at<float>(row, col);
+				if(!(depth == depth)) {
+					depth_image_cleared.at<float>(row, col) = 1000.;
+					num_nans_removed++;
+				}
+			}
+		}
+		ROS_INFO("Removed %d NaNs", num_nans_removed);
+
 		/* filter the depth image. this helps deal with the depth discretization of the kinect */
 		cv::Mat depth_image_filtered;
 		if(params_.use_bilateral_filter)
-			cv::bilateralFilter(depth_image, depth_image_filtered, -1, params_.bilateral_filter_color_sigma, params_.bilateral_filter_spatial_sigma);
+			cv::bilateralFilter(depth_image_cleared, depth_image_filtered, -1, params_.bilateral_filter_color_sigma, params_.bilateral_filter_spatial_sigma);
 		else
-			depth_image_filtered = depth_image;
+			depth_image_filtered = depth_image_cleared;
 
 		/* convert depth image to 3D points */
 		cv::Mat points3d;
@@ -221,6 +236,22 @@ public:
 		else {
 			planes_estimator(points3d, planes_mask, planes_coefficients);
 		}
+
+		/* make a plane with the all the non-associated points */
+		Plane non_plane;
+		for(int row = 0; row < points3d.rows; row++) {
+			for(int col = 0; col < points3d.cols; col++) {
+				unsigned char cur_plane_i = planes_mask.at<unsigned char>(row, col);
+				if(cur_plane_i != 255)
+					continue;
+
+				cv::Vec<float, 3> point_cv = points3d.at<cv::Vec<float, 3> >(row, col);
+				Eigen::Vector3d point(point_cv[0], point_cv[1], point_cv[2]);
+				Eigen::Vector3d point_ff = transform * point;
+				non_plane.points.push_back(point_ff);
+			}
+		}
+		planes_.push_back(non_plane);
 
 		for(unsigned int plane_i = 0; plane_i < planes_coefficients.size(); plane_i++) {
 			Plane new_plane;
@@ -257,7 +288,7 @@ public:
 			Plane plane = planes_[plane_i];
 
 			std_msgs::ColorRGBA c;
-			if(plane_i == 255) {
+			if(plane_i == 0) {
 				c.r = 1.0;
 				c.g = 1.0;
 				c.b = 1.0;
