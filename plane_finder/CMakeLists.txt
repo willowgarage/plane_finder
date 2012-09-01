@@ -19,11 +19,11 @@ find_package(Eigen)
 include_directories(${Eigen_INCLUDE_DIRS})
 
 # build plane finding ROS node
-add_executable(plane_node src/plane_node.cpp)
-target_link_libraries(plane_node ${ROS_LIBRARIES})
-target_link_libraries(plane_node ${Boost_THREAD_LIBRARY} ${Boost_SIGNALS_LIBRARY})
+add_executable(plane_finder_node src/plane_node.cpp)
+target_link_libraries(plane_finder_node ${ROS_LIBRARIES})
+target_link_libraries(plane_finder_node ${Boost_THREAD_LIBRARY} ${Boost_SIGNALS_LIBRARY})
 
-install(TARGETS plane_node
+install(TARGETS plane_finder_node
   RUNTIME DESTINATION bin
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib

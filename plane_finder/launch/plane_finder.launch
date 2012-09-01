@@ -1,0 +1,26 @@
+<launch>
+	<arg name="kinect_camera_name" default="head_mount_kinect"/>
+	
+		<!-- these are here as a workaround until catkin improves. remove them later -->
+		<param name="fixed_frame" value="/odom_combined"/>
+		<param name="use_normals" value="false"/>
+		<param name="use_bilateral_filter" value="true"/>
+		<param name="bilateral_filter_color_sigma" value="0.1"/>
+		<param name="bilateral_filter_spatial_sigma" value="10.0"/>
+		<param name="point_max_distance" value="3.0"/>
+		<param name="plane_min_points" value="1000"/>
+	
+	<!--
+	<node pkg="plane_finder" type="plane_finder_node" name="plane_finder">
+		<param name="fixed_frame" value="/odom_combined"/>
+		<param name="use_normals" value="false"/>
+		<param name="use_bilateral_filter" value="true"/>
+		<param name="bilateral_filter_color_sigma" value="1.0"/>
+		<param name="bilateral_filter_spatial_sigma" value="10.0"/>
+		<param name="point_max_distance" value="3.0"/>
+		<param name="plane_min_points" value="1000"/>
+		
+		<remap from="depth/image" to="/$(arg kinect_camera_name)/depth/image"/>
+		<remap from="depth/camera_info" to="/$(arg kinect_camera_name)/depth/camera_info"/>
+	</node> -->	
+</launch>
