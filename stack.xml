@@ -1,13 +1,13 @@
 <stack>
-  <name>nomad</name>
+  <name>plane_finder</name>
   <version>0.0.1</version>
-  <description brief="nomad">nomad</description>
+  <description brief="nomad">plane_finder</description>
   <author>Jon Binney</author>
   <maintainer email="jbinney@willowgarage.com">Jon Binney</maintainer>
   <copyright>Willow Garage</copyright>
   <license>BSD</license>  
   <review status="reviewed" notes=""/>
-  <url>http://ros.org/wiki/nomad</url>
+  <url>http://ros.org/wiki/plane_finder</url>
 
   <build_depends>catkin</build_depends>
   <build_depends>common_msgs</build_depends> <!-- sensor_msgs -->

@@ -1,9 +1,9 @@
 <package>
-  <description brief="plane_finder">plane_finder</description>
+  <description brief="plane_mapper">plane_finder</description>
   <author>Jonathan Binney</author>
   <license>BSD</license>
   <review status="unreviewed" notes=""/>
-  <url>http://ros.org/wiki/nomad_core</url>
+  <url>http://ros.org/wiki/plane_mapper</url>
 
   <depend package="roscpp"/>
   <depend package="rosbag"/>

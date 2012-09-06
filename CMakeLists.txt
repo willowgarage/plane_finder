@@ -3,4 +3,4 @@ project(nomad_stack)
 find_package(catkin REQUIRED)
 catkin_stack()
 
-add_subdirectory(plane_finder)
+add_subdirectory(plane_mapper)
