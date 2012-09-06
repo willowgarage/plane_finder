@@ -1,5 +1,5 @@
-#ifndef PLANE_FINDER_H_
-#define PLANE_FINDER_H_
+#ifndef PLANE_MAPPER_H_
+#define PLANE_MAPPER_H_
 
 #include <string>
 #include <vector>
@@ -30,7 +30,7 @@
 
 namespace enc = sensor_msgs::image_encodings;
 
-namespace plane_finder
+namespace plane_mapper
 {
 
 struct Plane
@@ -49,7 +49,7 @@ void camera_info_to_mat(const sensor_msgs::CameraInfo::ConstPtr info, cv::Mat &m
 			mat.at<float>(row, col) = info->K[row*3 + col];
 }
 
-class PlaneFinderNode
+class PlaneMapperNode
 {
 	struct Params {
 		/* fixed TF frame that all the planes are transformed to. markers are published
@@ -85,7 +85,7 @@ class PlaneFinderNode
 	};
 
 public:
-	PlaneFinderNode()
+	PlaneMapperNode()
 		: listener_(ros::Duration(1000), true) {
 		/* read params */
 		nh_.param<std::string>("fixed_frame", params_.fixed_frame, "/odom_combined");
@@ -97,12 +97,12 @@ public:
 		nh_.param<int>("plane_min_points", params_.plane_min_points, 1000);
 	}
 
-	void setParams(const PlaneFinderNode::Params &new_params) {
+	void setParams(const PlaneMapperNode::Params &new_params) {
 		boost::lock_guard<boost::mutex> lock(params_mutex_);
 		params_ = new_params;
 	}
 
-	PlaneFinderNode::Params getParams() {
+	PlaneMapperNode::Params getParams() {
 		boost::lock_guard<boost::mutex> lock(params_mutex_);
 		return params_;
 	}
@@ -120,7 +120,7 @@ public:
 		message_filters::Subscriber<sensor_msgs::Image> depth_image_sub(nh_, "/head_mount_kinect/depth/image", 10);
 		message_filters::Subscriber<sensor_msgs::CameraInfo> depth_info_sub(nh_, "/head_mount_kinect/depth/camera_info", 10);
 		message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::CameraInfo> sync_sub(depth_image_sub, depth_info_sub, 100);
-		sync_sub.registerCallback(boost::bind(&PlaneFinderNode::msgCallback, this, _1, _2));
+		sync_sub.registerCallback(boost::bind(&PlaneMapperNode::msgCallback, this, _1, _2));
 
 		marker_array_pub_ = nh_.advertise<visualization_msgs::MarkerArray>("planes", 1000);
 
@@ -335,7 +335,7 @@ public:
 	}
 
 private:
-	PlaneFinderNode::Params params_;
+	PlaneMapperNode::Params params_;
 	boost::mutex params_mutex_;
 	std::vector<Plane, Eigen::aligned_allocator<Plane> > planes_;
 
@@ -348,6 +348,6 @@ private:
 
 };
 
-} /* namespace plane_finder */
+} /* namespace plane_mapper */
 
-#endif /* PLANE_FINDER_H_ */
+#endif /* PLANE_MAPPER_H_ */
